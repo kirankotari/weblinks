@@ -22,7 +22,7 @@ Wanted to fetch the links from web and filter them using substring, a file exten
 ## Usage
 
 ```
-usage: weblinks.py [-h] -w WEB [-u USERNAME] [-p PASSWORD] [-e EXT] [-d] [-v]
+usage: weblinks [-h] -w WEB [-u USERNAME] [-p PASSWORD] [-e EXT] [-d] [-v]
                    substring
 
 positional arguments:
