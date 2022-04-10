@@ -148,7 +148,7 @@ class Web(System):
 
 class Args:
     @staticmethod
-    def get_parser():
+    def get_parser(args=None):
         parser = argparse.ArgumentParser(
             prog='weblinks',
             add_help=False
@@ -180,7 +180,7 @@ class Args:
         config_parsers.add_parser("substring", help="the sub-string in the links", parents=[parser])
         config_parsers.add_parser("local", help="weblinks local configuration", parents=[parent_config_parser])
         config_parsers.add_parser("global", help="weblinks global configuration", parents=[parent_config_parser])
-        return config_main_parser.parse_args()
+        return config_main_parser.parse_args(args)
 
     @staticmethod
     def validate(args, log):
