@@ -88,15 +88,37 @@ class Web(System):
         return temp
 
     def get_parser(self):
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-w", "--web", required=True, help="the website")
-        parser.add_argument("substring", help="the sub-string in the links")
+        parser = argparse.ArgumentParser(
+            prog='weblinks',
+            add_help=False
+        )
+        parser.add_argument("substring", help="sub-string filter")
+        parser.add_argument("-w", "--web", default=None, help="the website")
         parser.add_argument("-u", "--username", default=None, help="web login username")
         parser.add_argument("-p", "--password", default=None, help="web login password")
         parser.add_argument("-e", "--ext", default=None, help="file extention")
         parser.add_argument('-d', '--download', action='store_true', help="download links")
         parser.add_argument("-v", "--verbosity", action="count", default=0)
-        return parser.parse_args()
+
+        parent_config_parser = argparse.ArgumentParser(
+            prog='weblinks',
+            add_help=False
+        )
+        parent_config_parser.add_argument('-w', '--web', nargs="?", default=None, help='web site url')
+        parent_config_parser.add_argument('-u', '--username', nargs="?", default=None, help='web site username')
+        parent_config_parser.add_argument("-e", "--ext", nargs="?", default=None, help="file extention")
+        parent_config_parser.add_argument('-d', '--download', action='store_true', help="download links")
+        parent_config_parser.add_argument('-s', '--show', default=False, action='store_true', help="display configuration")
+
+        config_main_parser = argparse.ArgumentParser(
+            prog='weblinks'
+        )
+        config_parsers = config_main_parser.add_subparsers(title="configuration", dest="config")
+        config_parsers.add_parser("substring", help="the sub-string in the links", parents=[parser])
+        config_parsers.add_parser("local", help="weblinks local configuration", parents=[parent_config_parser])
+        config_parsers.add_parser("global", help="weblinks global configuration", parents=[parent_config_parser])
+        return config_main_parser.parse_args()
+
 
 def main():
     obj = Web()
