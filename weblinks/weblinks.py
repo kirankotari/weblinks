@@ -119,10 +119,15 @@ def main():
 
     obj.setup(args)
     links = obj.get_links()
+    if not len(links):
+        print(f"No links found in {args.web}")
+        exit(-1)
+
     print("links found:")
     print("============")
     for each in links:
         print(each)
+
     if args.download:
         print("============")
         obj.download(args.web, links)
