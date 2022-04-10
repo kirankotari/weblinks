@@ -26,7 +26,9 @@ import argparse
 import random
 import re
 import os
+import sys
 import string
+import logging
 import subprocess
 import validators
 
@@ -39,13 +41,16 @@ from pathlib import Path
 class System:
     cmd = ["curl", "-k"]
 
-    def setup(self, args):
+    def __init__(self, log):
+        self.log = log
+
+    def update_command(self, args):
         if args.username:
             self.cmd += ["-u", f"{args.username}:{args.password}"]
 
     def download(self, web, list_files):
         for each in list_files:
-            print(f"downloading: {each}")
+            self.log.info(f"downloading: {each}")
             self.run([f"{web}{each}", "-o", f"{each}"])
 
     def run(self, cmd):
@@ -53,12 +58,9 @@ class System:
         return True
 
 class Web(System):
-    def __init__(self) -> None:
-        self.log = self.get_logger()
-        self.args = self.get_parser()
-
-    def get_logger(self):
-        pass
+    def __init__(self, name, log) -> None:
+        super().__init__(log)
+        self.name = name
 
     def get_links(self):
         html = self.get_webpage()
@@ -82,12 +84,9 @@ class Web(System):
             os.unlink(f"{name}.html")
             return html
 
-    def hide_password(self, dict):
-        temp = dict.copy()
-        temp['password'] = 'xxxxxxx'
-        return temp
-
-    def get_parser(self):
+class Args:
+    @staticmethod
+    def get_parser():
         parser = argparse.ArgumentParser(
             prog='weblinks',
             add_help=False
@@ -119,39 +118,92 @@ class Web(System):
         config_parsers.add_parser("global", help="weblinks global configuration", parents=[parent_config_parser])
         return config_main_parser.parse_args()
 
+    @staticmethod
+    def validate(args, obj):
+        if args.web:
+            if not validators.url(args.web):
+                obj.log.error(f"Given url `{args.web}` is invalid")
+                exit(-1)
+            if len(args.web.split('/')[-1].split('.')) == 1:
+                args.web += '/'
+
+        if args.username and not args.password:
+            args.password = getpass("enter web password to fetch the links: ")
+        return args
+
+    @staticmethod
+    def hide(dict):
+        temp = dict.copy()
+        temp['password'] = 'xxxxxxx'
+        return temp
+
+
+class CustomLogger:
+    @staticmethod
+    def add_trace():
+        def _trace(logger, message, *args, **kwargs):
+            if logger.isEnabledFor(logging.TRACE):
+                logger._log(logging.TRACE, message, args, **kwargs)
+
+        def __create_trace_log_level():
+            "Add TRACE log level and Logger.trace() method."
+
+            logging.TRACE = 5
+            logging.addLevelName(logging.TRACE, "TRACE")
+
+            logging.Logger.trace = _trace
+            return logging
+        return __create_trace_log_level()
+
+    @staticmethod
+    def set_log(logging, log_level, name):
+        format = '%(levelname)s | %(name)s | %(message)s'
+        logging.basicConfig(
+            stream=sys.stdout, 
+            level=log_level, 
+            format=format, 
+            datefmt=None
+        )
+        logger = logging.getLogger(name)
+        logger.setLevel(log_level)
+        return logger
+
 
 def main():
-    obj = Web()
-    args = obj.args
-    if args.verbosity >= 2:
-        # TODO: need to update to obj.log.info("")
-        print(f"Running '{__file__}'")
-    if args.verbosity >= 1:
-        print(f"Given arguments {obj.hide_password(args.__dict__)}")
+    name = "Weblinks"
+    args = Args.get_parser()
+    logging = CustomLogger.add_trace()
+    log_level = None
+    if args.verbosity >= 2: 
+        log_level = logging.TRACE
+    elif args.verbosity >= 1:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+    log = CustomLogger.set_log(logging, log_level, name)
 
-    if args.web:
-        if not validators.url(args.web):
-            print(f"Given url `{args.web}` is invalid")
-            exit(-1)
-        if len(args.web.split('/')[-1].split('.')) == 1:
-            args.web += '/'
+    obj = Web(name, log)
+    log.trace(f"Running '{__file__}'")
+    log.debug(f"Given arguments {Args.hide(args.__dict__)}")
 
-    if args.username and not args.password:
-        args.password = getpass("enter web password to fetch the links: ")
+    args = Args.validate(args, obj)
 
-    obj.setup(args)
-    links = obj.get_links()
-    if not len(links):
-        print(f"No links found in {args.web}")
+    def links():
+        obj.update_command(args)
+        return obj.get_links()
+
+    urls = links()
+    if not len(urls):
+        log.info(f"No links found in {args.web}")
         exit(-1)
 
-    print("links found:")
-    print("============")
-    for each in links:
-        print(each)
+    log.info("links found:")
+    log.info("============")
+    for each in links():
+        log.info(each)
 
     if args.download:
-        print("============")
+        log.info("============")
         obj.download(args.web, links)
 
 
