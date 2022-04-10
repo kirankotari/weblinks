@@ -27,6 +27,7 @@ import random
 import re
 import os
 import sys
+import pickle
 import string
 import logging
 import subprocess
@@ -35,8 +36,6 @@ import validators
 from getpass import getpass
 from pathlib import Path
 
-# TODO: simple way of collecting links from html page
-# TODO: running os commands like curl
 
 class System:
     cmd = ["curl", "-k"]
@@ -57,10 +56,27 @@ class System:
         subprocess.call(self.cmd + cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
 
+    def exist(self, path):
+        p = Path(path).expanduser().absolute()
+        return p.exists()
+
+    def pickle_read(self, path):
+        p = Path(path).expanduser().absolute().as_posix()
+        with open(p, 'rb') as f:
+            return pickle.load(f)
+
+    def pickle_write(self, path, data):
+        p = Path(path).expanduser().absolute().as_posix()
+        with open(p, 'wb') as f:
+            pickle.dump(data, f)
+
 class Web(System):
-    def __init__(self, name, log) -> None:
+    def __init__(self, name, log, args) -> None:
         super().__init__(log)
         self.name = name
+        self.args = args
+        self.global_path = '~/.weblinks'
+        self.local_path = './.weblinks'
 
     def get_links(self):
         html = self.get_webpage()
@@ -78,11 +94,57 @@ class Web(System):
             return f.read()
 
     def get_webpage(self):
+        if not self.args.web:
+            self.log.error(f'web link is missing got: `{self.args.web}`')
+            exit(-1)
         name = self.get_name()
         if self.run([f"{self.args.web}", f"-o", f"{name}.html"]):
             html = self.read(f"{name}.html")
             os.unlink(f"{name}.html")
             return html
+
+    def fetch_config(self, path):
+        if self.exist(path):
+            return self.pickle_read(path)
+        return False
+
+    def config(self, path):
+        if self.args.show:
+            data = self.fetch_config(path)
+            msg = "No configuration found."
+            self.log.info(data) if data else self.log.error(msg)
+            return
+
+        d = dict()
+        if self.args.web is not None:
+            d['web'] = self.args.web
+        if self.args.username is not None:
+            d['username'] = self.args.username
+        if self.args.ext is not None:
+            d['ext'] = self.args.ext
+        if self.args.download is not None:
+            d['download'] = self.args.download
+        self.__update_config(path, d)
+
+    def __update_config(self, path, data):
+        if not self.exist(path):
+            self.pickle_write(path, data)
+            return
+        d = self.pickle_read(path)
+        d.update(data)
+        self.pickle_write(path, d)
+
+    def update_args(self, d):
+        if not self.args.web:
+            self.args.web = d.get('web')
+        if not self.args.username:
+            self.args.username = d.get('username')
+        if not self.args.ext:
+            self.args.ext = d.get('ext')
+        if not self.args.download:
+            self.args.download = d.get('download')
+        return self.args
+
 
 class Args:
     @staticmethod
@@ -107,7 +169,9 @@ class Args:
         parent_config_parser.add_argument('-u', '--username', nargs="?", default=None, help='web site username')
         parent_config_parser.add_argument("-e", "--ext", nargs="?", default=None, help="file extention")
         parent_config_parser.add_argument('-d', '--download', action='store_true', help="download links")
-        parent_config_parser.add_argument('-s', '--show', default=False, action='store_true', help="display configuration")
+        parent_config_parser.add_argument('--no-download', action='store_false', help="do not download links")
+        parent_config_parser.add_argument('-s', '--show', action='store_true', help="display configuration")
+        parent_config_parser.add_argument("-v", "--verbosity", action="count", default=0)
 
         config_main_parser = argparse.ArgumentParser(
             prog='weblinks'
@@ -119,13 +183,16 @@ class Args:
         return config_main_parser.parse_args()
 
     @staticmethod
-    def validate(args, obj):
+    def validate(args, log):
         if args.web:
             if not validators.url(args.web):
-                obj.log.error(f"Given url `{args.web}` is invalid")
+                log.error(f"Given url `{args.web}` is invalid")
                 exit(-1)
             if len(args.web.split('/')[-1].split('.')) == 1:
                 args.web += '/'
+
+        if args.config != 'substring':
+            return args
 
         if args.username and not args.password:
             args.password = getpass("enter web password to fetch the links: ")
@@ -174,6 +241,7 @@ def main():
     args = Args.get_parser()
     logging = CustomLogger.add_trace()
     log_level = None
+
     if args.verbosity >= 2: 
         log_level = logging.TRACE
     elif args.verbosity >= 1:
@@ -182,14 +250,27 @@ def main():
         log_level = logging.INFO
     log = CustomLogger.set_log(logging, log_level, name)
 
-    obj = Web(name, log)
+    args = Args.validate(args, log)
+    obj = Web(name, log, args)
     log.trace(f"Running '{__file__}'")
     log.debug(f"Given arguments {Args.hide(args.__dict__)}")
 
-    args = Args.validate(args, obj)
+    if args.config == 'global':
+        obj.config(obj.global_path)
+        return
+    elif args.config == 'local':
+        obj.config(obj.local_path)
+        return
 
+    # fetch config
+    d = obj.fetch_config(obj.local_path)
+    if not d:
+        d = obj.fetch_config(obj.global_path)
+
+    if d:
+        obj.update_args(d)
     def links():
-        obj.update_command(args)
+        obj.update_command(obj.args)
         return obj.get_links()
 
     urls = links()
