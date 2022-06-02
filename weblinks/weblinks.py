@@ -61,11 +61,11 @@ class Web(System):
         pass
 
     def get_links(self):
-        html = self.get_webpage()
+        html = self.get_webpage(delete_copy=True)
         if self.args.ext:
-            files = re.findall(f'href="(.*?{self.args.substring}.*\.{self.args.ext})"', html)
+            files = re.findall(f'href\=\"(.*{self.args.substring}.*.{self.args.ext})\"', html)
         else:
-            files = re.findall(f'href="(.*?{self.args.substring}.*)"', html)
+            files = re.findall(f'href\=\"(.*?{self.args.substring}.*)\"', html)
         return files
 
     def get_name(self):
@@ -75,11 +75,12 @@ class Web(System):
         with open(fpath, 'r') as f:
             return f.read()
 
-    def get_webpage(self):
+    def get_webpage(self, delete_copy=True):
         name = self.get_name()
         if self.run([f"{self.args.web}", f"-o", f"{name}.html"]):
             html = self.read(f"{name}.html")
-            os.unlink(f"{name}.html")
+            if delete_copy:
+                os.unlink(f"{name}.html")
             return html
 
     def hide_password(self, dict):
