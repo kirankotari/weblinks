@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from os import path
 from io import open
 
-version = "1.1.0"
+version = "1.1.1"
 
 # setup file path
 here = path.abspath(path.dirname(__file__))
