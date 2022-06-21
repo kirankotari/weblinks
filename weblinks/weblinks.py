@@ -29,15 +29,22 @@ import os
 import string
 import subprocess
 import validators
+import logging
 
 from getpass import getpass
 from pathlib import Path
 
-# TODO: simple way of collecting links from html page
-# TODO: running os commands like curl
+format = '%(levelname)-8s | %(asctime)s | %(module)s:%(lineno)-4d | %(message)s'
+
+
+def get_log(level):
+    logging.basicConfig(level=level, format=format)
+    return logging.getLogger()
+
 
 class System:
     cmd = ["curl", "-k"]
+    log = get_log(logging.INFO)
 
     def setup(self, args):
         if args.username:
@@ -45,23 +52,25 @@ class System:
 
     def download(self, web, list_files):
         for each in list_files:
-            print(f"downloading: {each}")
+            self.log.info(f"downloading: {each}")
             self.run([f"{web}{each}", "-o", f"{each}"])
 
     def run(self, cmd):
-        subprocess.call(self.cmd + cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        res = subprocess.call(self.cmd + cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if res:
+            self.log.error(f"command: `{' '.join(cmd)}`, check reachability")
+            return False
         return True
 
 class Web(System):
     def __init__(self) -> None:
-        self.log = self.get_logger()
         self.args = self.get_parser()
-
-    def get_logger(self):
-        pass
 
     def get_links(self):
         html = self.get_webpage(delete_copy=True)
+        if html is None:
+            self.log.error("Couldn't able to read html page")
+            return
         if self.args.ext:
             files = re.findall(f'href\=\"(.*{self.args.substring}.*.{self.args.ext})\"', html)
         else:
@@ -77,9 +86,10 @@ class Web(System):
 
     def get_webpage(self, delete_copy=True):
         name = self.get_name()
-        if self.run([f"{self.args.web}", f"-o", f"{name}.html"]):
+        if self.run([f"{self.args.web}", f"-o", f"./{name}.html"]):
             html = self.read(f"{name}.html")
             if delete_copy:
+                self.log.debug(f"removing temporary files, {name}.html")
                 os.unlink(f"{name}.html")
             return html
 
@@ -99,18 +109,21 @@ class Web(System):
         parser.add_argument("-v", "--verbosity", action="count", default=0)
         return parser.parse_args()
 
+
 def main():
     obj = Web()
     args = obj.args
-    if args.verbosity >= 2:
-        # TODO: need to update to obj.log.info("")
-        print(f"Running '{__file__}'")
+    level=logging.INFO
     if args.verbosity >= 1:
-        print(f"Given arguments {obj.hide_password(args.__dict__)}")
+        level=logging.DEBUG
+    
+    obj.log = get_log(level)
+    obj.log.debug(f"Running '{__file__}'")
+    obj.log.debug(f'args: {obj.hide_password(args.__dict__)}')
 
     if args.web:
         if not validators.url(args.web):
-            print(f"Given url `{args.web}` is invalid")
+            obj.log.error(f"url `{args.web}` is invalid")
             exit(-1)
         if len(args.web.split('/')[-1].split('.')) == 1:
             args.web += '/'
@@ -120,18 +133,22 @@ def main():
 
     obj.setup(args)
     links = obj.get_links()
-    if not len(links):
-        print(f"No links found in {args.web}")
+    if links is None:
         exit(-1)
 
-    print("links found:")
-    print("============")
+    if not len(links):
+        obj.log.warning(f"no links found in {args.web}")
+        exit(-1)
+
+    obj.log.info("links found:")
     for each in links:
         print(each)
 
     if args.download:
+        obj.log.info("started downloading files")
         print("============")
         obj.download(args.web, links)
+        obj.log.info("downloading completed.")
 
 
 if __name__ == "__main__":
