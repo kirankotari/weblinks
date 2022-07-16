@@ -1,125 +1,191 @@
 import re
 import pytest
+import logging
 import argparse
 import unittest
+import subprocess
+
+from unittest import mock
+from _pytest.monkeypatch import MonkeyPatch
 
 from weblinks import run
-from unittest import mock
+from weblinks import utils
+from weblinks import weblinks
 
-@pytest.mark.run
-class TestWeblinksWithNone(unittest.TestCase):
+
+LOGGER = logging.getLogger(__name__)
+
+
+def get_inputs():
     args = {
         'username': None,
         'password': None, 
         'ext': None,
         'download': False,
         'verbosity': 0,
-        'web': '',
-        'substring': ''
+        'web': None,
+        'substring': None
     }
-
-    @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(**args))
-    def test_files(self, mock_args):
-        run.main()
+    return args
 
 @pytest.mark.run
-class TestWeblinksWithWebpage(unittest.TestCase):
-    args = {
-        'username': None,
-        'password': None, 
-        'ext': None,
-        'download': False,
-        'verbosity': 0,
-        'web': 'https://www.python.org/ftp/python/3.8.13/',
-        'substring': 'Python'
-    }
+class TestWeblinksWithMissingArgs(unittest.TestCase):
 
-    @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(**args))
-    def test_files(self, mock_args):
-        run.main()
+    def setUp(self):
+        self.monkeypatch = MonkeyPatch()
+        self.args = get_inputs()
+
+    def tearDown(self) -> None:
+        self.monkeypatch.undo()
+        return super().tearDown()
 
 
-@pytest.mark.run
-class TestWeblinksWithInvalidWebpage(unittest.TestCase):
-    args = {
-        'username': None,
-        'password': None, 
-        'ext': None,
-        'download': False,
-        'verbosity': 0,
-        'web': 'abcd',
-        'substring': 'Python'
-    }
+    @property
+    def applyPatch(self):
+        f = lambda x: argparse.Namespace(**self.args)
+        self.monkeypatch.setattr(argparse.ArgumentParser, 'parse_args', f)
 
-    @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(**args))
-    def test_files(self, mock_args):
-        run.main()
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
 
-@pytest.mark.run
-class TestWeblinksWithExtension(unittest.TestCase):
-    args = {
-        'username': None,
-        'password': None, 
-        'ext': '.tgz',
-        'download': False,
-        'verbosity': 1,
-        'web': 'https://www.python.org/ftp/python/3.8.13/',
-        'substring': 'Python'
-    }
+    def test_web_is_mandatory(self):
+        self.applyPatch
+        with self._caplog.at_level(logging.INFO):
+            run.main()
+            messages = {each.message for each in self._caplog.records}
+            assert "--web is mandatory" in messages
 
-    @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(**args))
-    def test_files(self, mock_args):
-        run.main()
+    def test_substring_is_mandatory(self):
+        self.args['web'] = 'https://www.python.org/ftp/python/3.8.13/'
+        self.applyPatch
+        with self._caplog.at_level(logging.INFO):
+            run.main()
+            messages = {each.message for each in self._caplog.records}
+            assert "substring is mandatory" in messages
+
+    def test_invalid_webpage(self):
+        self.args['web'] = 'abcd'
+        self.applyPatch
+        with self._caplog.at_level(logging.INFO):
+            run.main()
+            messages = {each.message for each in self._caplog.records}
+            assert "url `abcd` is invalid" in messages
+
 
 @pytest.mark.run
-class TestWeblinksWithVerbose(unittest.TestCase):
-    args = {
-        'username': None,
-        'password': None, 
-        'ext': None,
-        'download': False,
-        'verbosity': 1,
-        'web': 'https://www.python.org/ftp/python/3.8.13/',
-        'substring': 'Python'
-    }
+class TestWeblinksWithArgs(unittest.TestCase):
 
-    @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(**args))
-    def test_files(self, mock_args):
-        run.main()
+    def setUp(self):
+        self.monkeypatch = MonkeyPatch()
+        self.args = get_inputs()
+        self.args['web'] = 'https://www.python.org/ftp/python/3.8.13/'
+        self.args['substring'] = 'Python'
 
-@pytest.mark.run
-class TestWeblinksWithDownload(unittest.TestCase):
-    args = {
-        'username': None,
-        'password': None, 
-        'ext': '.tgz',
-        'download': True,
-        'verbosity': 1,
-        'web': 'https://www.python.org/ftp/python/3.8.13/',
-        'substring': 'Python'
-    }
+    def tearDown(self) -> None:
+        self.monkeypatch.undo()
+        return super().tearDown()
 
-    @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(**args))
-    def test_files(self, mock_args):
-        run.main()
+    @property
+    def applyPatch(self):
+        f = lambda x: argparse.Namespace(**self.args)
+        self.monkeypatch.setattr(argparse.ArgumentParser, 'parse_args', f)
+        self.monkeypatch.setattr(utils.System, 'download', lambda x,y, z: None)
 
-# @pytest.mark.run
-# class TestWeblinksNoArgs(unittest.TestCase):
-#     args = {
-#         'username': None,
-#         'password': None, 
-#         'ext': '.tgz',
-#         'download': True,
-#         'verbosity': 1,
-#     }
+    @property
+    def applyPatch2(self):
+        self.applyPatch
+        self.monkeypatch.setattr(weblinks.Web, 'get_webpage', lambda x, delete_copy: None)
 
-#     @mock.patch('argparse.ArgumentParser.parse_args',
-#                 return_value=argparse.Namespace(**args))
-#     def test_files(self, mock_args):
-#         run.main()
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
+
+    def test_links_found(self):
+        self.applyPatch
+        with self._caplog.at_level(logging.INFO):
+            run.main()
+            messages = {each.message for each in self._caplog.records}
+            assert "links found" in messages
+
+    def test_links_found_with_verbose(self):
+        self.args['verbosity'] = 1
+        self.applyPatch
+        with self._caplog.at_level(logging.DEBUG):
+            run.main()
+            messages = set(each.message for each in self._caplog.records)
+            assert 'given webpage is valid' in messages
+            assert 'applying filters' in messages
+            assert 'found: 4 files' in messages
+            assert 'links found' in messages
+
+    def test_links_found_with_download(self):
+        self.args['download'] = True
+        self.applyPatch
+        with self._caplog.at_level(logging.INFO):
+            run.main()
+            messages = set(each.message for each in self._caplog.records)
+            assert 'links found' in messages
+            assert 'start download: Python-3.8.13.tar.xz' in messages
+            assert 'completed: Python-3.8.13.tar.xz' in messages
+
+    def test_links_found_with_download_and_verbose(self):
+        self.args['verbosity'] = 1
+        self.args['download'] = True
+        self.applyPatch
+        with self._caplog.at_level(logging.DEBUG):
+            run.main()
+            messages = set(each.message for each in self._caplog.records)
+            assert 'given webpage is valid' in messages
+            assert 'applying filters' in messages
+            assert 'found: 4 files' in messages
+            assert 'links found' in messages
+            assert 'start download: Python-3.8.13.tar.xz' in messages
+            assert 'completed: Python-3.8.13.tar.xz' in messages
+
+    def test_links_found_with_ext(self):
+        self.args['verbosity'] = 1
+        self.args['ext'] = '.tgz'
+        self.applyPatch
+        with self._caplog.at_level(logging.DEBUG):
+            run.main()
+            messages = set(each.message for each in self._caplog.records)
+            assert 'given webpage is valid' in messages
+            assert 'applying filters' in messages
+            assert 'found: 1 files' in messages
+            assert 'links found' in messages
+
+    def test_links_found_with_wrong_ext(self):
+        self.args['verbosity'] = 1
+        self.args['ext'] = '.abc'
+        self.applyPatch
+        with self._caplog.at_level(logging.DEBUG):
+            run.main()
+            messages = set(each.message for each in self._caplog.records)
+            assert 'given webpage is valid' in messages
+            assert 'applying filters' in messages
+            assert 'found: 0 files' in messages
+            assert 'no links found for Python' in messages
+
+    def test_links_found_with_wrong_substring(self):
+        self.args['verbosity'] = 1
+        self.args['substring'] = 'abc'
+        self.applyPatch
+        with self._caplog.at_level(logging.DEBUG):
+            run.main()
+            messages = set(each.message for each in self._caplog.records)
+            assert 'given webpage is valid' in messages
+            assert 'applying filters' in messages
+            assert 'found: 0 files' in messages
+            assert 'no links found for abc' in messages
+
+    def test_no_html_page(self):
+        self.args['verbosity'] = 1
+        self.applyPatch2
+        with self._caplog.at_level(logging.DEBUG):
+            run.main()
+            messages = set(each.message for each in self._caplog.records)
+            assert 'given webpage is valid' in messages
+            assert "couldn't able to read html page" in messages
+            assert 'no links found for Python' in messages
+

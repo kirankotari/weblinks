@@ -53,6 +53,14 @@ def validate_parser(log, args) -> bool:
             args.web += '/'
         log.debug(f"given webpage is valid")
 
+    if not args.web:
+        log.error(f"--web is mandatory")
+        return False
+
+    if not args.substring:
+        log.error(f"substring is mandatory")
+        return False
+
     if args.username and not args.password:
         log.debug(f'collecting password for the given username')
         args.password = getpass("enter web password to fetch the links: ")
@@ -90,6 +98,6 @@ def main():
                 log.info(f'completed: {l}')
         return
 
-
+# TODO: need to add new features like proxy etc.
 if __name__ == "__main__":
     main()
