@@ -1,8 +1,11 @@
+from __future__ import absolute_import
+
 import re
 import os
+
 from logging import INFO
 from typing import Union
-from utils import System, Utils
+from .utils import System, Utils
 
 
 class Web(Utils, System):
@@ -21,9 +24,9 @@ class Web(Utils, System):
             return []
         self.log.debug(f"applying filters")
         if self.ext:
-            files = re.findall(f'href\=\"(.*{self.filter}.*.{self.ext})\"', html)
+            files = re.findall(fr'href="(.*{self.filter}.*.{self.ext})"', html)
         else:
-            files = re.findall(f'href\=\"(.*?{self.filter}.*)\"', html)
+            files = re.findall(fr'href="(.*?{self.filter}.*)"', html)
         self.log.debug(f'found: {len(files)} files')
         return files
 

@@ -6,7 +6,6 @@ import random
 import string
 import logging
 import subprocess
-from xmlrpc.client import Boolean
 
 
 format = '%(levelname)-8s | %(asctime)s | %(module)-8s:%(lineno)-4d | %(message)s'
@@ -57,9 +56,10 @@ class System:
 
     def download(self, web, fname) -> None:
         self.log.info(f"downloading: {fname}")
+        # "--progress-bar" which is supressed by subprocess.call
         self.run([f"{web}{fname}", "-o", f"{fname}"])
 
-    def run(self, cmd) -> Boolean:
+    def run(self, cmd) -> bool:
         self.log.debug(f"executing curl command: {' '.join(self.cmd + cmd)}")
         res = subprocess.call(self.cmd + cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if res:

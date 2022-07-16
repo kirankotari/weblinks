@@ -25,12 +25,11 @@ optional arguments:
 
 import logging
 import argparse
-from xmlrpc.client import Boolean
 import validators
 
+from .weblinks import Web
+from .utils import get_log
 from getpass import getpass
-from weblinks import Web
-from utils import get_log
 
 
 def parser() -> argparse:
@@ -45,7 +44,7 @@ def parser() -> argparse:
     return parser.parse_args()
 
 
-def validate_parser(log, args) -> Boolean:
+def validate_parser(log, args) -> bool:
     if args.web:
         if not validators.url(args.web):
             log.error(f"url `{args.web}` is invalid")
