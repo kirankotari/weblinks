@@ -23,13 +23,13 @@ optional arguments:
 # TODO: need to add how to use the lib.
 """
 
+import getpass
 import logging
 import argparse
 import validators
 
 from .weblinks import Web
 from .utils import get_log
-from getpass import getpass
 
 
 def parser() -> argparse:
@@ -63,7 +63,7 @@ def validate_parser(log, args) -> bool:
 
     if args.username and not args.password:
         log.debug(f'collecting password for the given username')
-        args.password = getpass("enter web password to fetch the links: ")
+        args.password = getpass.getpass("enter web password to fetch the links: ")
 
     return True
 
@@ -99,5 +99,3 @@ def main():
         return
 
 # TODO: need to add new features like proxy etc.
-if __name__ == "__main__":
-    main()

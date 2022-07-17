@@ -62,19 +62,31 @@ class TestWeblinksWithOOTB(unittest.TestCase):
             assert "couldn't able to read html page" in messages
             assert 'no links found for Python' in messages
 
-    # @mock.patch("getpass.getpass")
-    # def test_username_in_validate_parser(self, getpass):
-    #     self.args['verbosity'] = 1
-    #     self.args['username'] = "dummy"
-    #     getpass.return_value == 'dummy'
-    #     self.applyPatch
-    #     with self._caplog.at_level(logging.DEBUG):
-    #         run.main()
-    #         messages = set(each.message for each in self._caplog.records)
-    #         assert 'given webpage is valid' in messages
-    #         assert any(['check reachability' in msg for msg in messages])
-    #         assert "couldn't able to read html page" in messages
-    #         assert 'no links found for Python' in messages
+    def test_username_in_validate_parser(self):
+        self.args['verbosity'] = 1
+        self.args['username'] = "dummy"
+        self.applyPatch
+        self.monkeypatch.setattr('getpass.getpass', lambda x: 'valid-pass')
+        with self._caplog.at_level(logging.DEBUG):
+            run.main()
+            messages = set(each.message for each in self._caplog.records)
+            assert 'given webpage is valid' in messages
+            assert any(['check reachability' in msg for msg in messages])
+            assert "couldn't able to read html page" in messages
+            assert 'no links found for Python' in messages
+
+    def test_for_given_password(self):
+        self.args['verbosity'] = 1
+        self.args['username'] = "dummy"
+        self.args['password'] = "dummy"
+        self.applyPatch
+        with self._caplog.at_level(logging.DEBUG):
+            run.main()
+            messages = set(each.message for each in self._caplog.records)
+            assert 'given webpage is valid' in messages
+            assert any(['check reachability' in msg for msg in messages])
+            assert "couldn't able to read html page" in messages
+            assert 'no links found for Python' in messages
 
 
 @pytest.mark.run
