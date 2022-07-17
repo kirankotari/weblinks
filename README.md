@@ -1,9 +1,14 @@
 # Weblinks
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache2-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Version: 1.1](https://img.shields.io/badge/Version-1.1-parrotgreen.svg)](https://github.com/kirankotari/weblinks)
-[![Downloads](https://pepy.tech/badge/weblinks)](https://pepy.tech/project/weblinks)
-[![Downloads](https://pepy.tech/badge/weblinks/week)](https://pepy.tech/project/weblinks/week)
+[![pytest](https://github.com/kirankotari/weblinks/actions/workflows/pytest.yml/badge.svg)](https://github.com/kirankotari/weblinks/actions/workflows/pytest.yml)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/kirankotari/weblinks)
+[![Downloads](https://static.pepy.tech/personalized-badge/weblinks?period=total&units=international_system&left_color=grey&right_color=orange&left_text=pypi%20downloads)](https://pepy.tech/project/weblinks)
+[![Downloads](https://static.pepy.tech/personalized-badge/weblinks?period=week&units=international_system&left_color=grey&right_color=orange&left_text=pypi%20downloads/week)](https://pepy.tech/project/weblinks)
+![GitHub all releases](https://img.shields.io/github/downloads/kirankotari/weblinks/total?label=github%20downloads)
+![GitHub top language](https://img.shields.io/github/languages/top/kirankotari/weblinks)
+![GitHub issues](https://img.shields.io/github/issues/kirankotari/weblinks)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/kirankotari/weblinks)
 
 - [Introduction](#introduction)
 - [Installation and Downloads](#installation-and-downloads)
