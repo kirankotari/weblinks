@@ -1,0 +1,18 @@
+name: "Issue Labeler"
+on:
+  issues:
+    types: [opened, edited]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: github/issue-labeler@v2.0
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        configuration-path: .github/labels/issue_labeler.yml
+        # not-before: 2020-01-15T02:54:32Z
+        enable-versioned-regex: 0

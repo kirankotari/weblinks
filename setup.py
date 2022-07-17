@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from os import path
 from io import open
 
-version = "1.1.1"
+version = "1.2"
 
 # setup file path
 here = path.abspath(path.dirname(__file__))
@@ -29,7 +29,7 @@ setup(
     # Un-comment to enable command line feature
     entry_points={
     	'console_scripts': [
-    		'weblinks = weblinks.weblinks:main'
+    		'weblinks = weblinks.run:main'
     	],
     },
 
