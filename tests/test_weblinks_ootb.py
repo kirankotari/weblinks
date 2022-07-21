@@ -1,16 +1,12 @@
-import re
 import pytest
-import getpass
 import logging
 import argparse
 import unittest
 import subprocess
 
-from unittest import mock
 from _pytest.monkeypatch import MonkeyPatch
 
 from weblinks import run
-from weblinks import utils
 from weblinks import weblinks
 
 
@@ -25,7 +21,12 @@ def get_inputs():
         'download': False,
         'verbosity': 0,
         'web': 'https://www.python.org/ftp/python/3.8.13/',
-        'substring': 'Python'
+        'substring': 'Python',
+        'proxy': None, 
+        'proxy_username': None,
+        'proxy_password': None,
+        'local': None,
+        'global': None
     }
     return args
 

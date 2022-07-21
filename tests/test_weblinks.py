@@ -1,11 +1,8 @@
-import re
 import pytest
 import logging
 import argparse
 import unittest
-import subprocess
 
-from unittest import mock
 from _pytest.monkeypatch import MonkeyPatch
 
 from weblinks import run
@@ -24,9 +21,43 @@ def get_inputs():
         'download': False,
         'verbosity': 0,
         'web': None,
-        'substring': None
+        'substring': None,
+        'proxy': None, 
+        'proxy_username': None,
+        'proxy_password': None,
+        'local': None,
+        'global': None
     }
     return args
+
+@pytest.mark.run
+class TestWeblinksVersion(unittest.TestCase):
+
+    def setUp(self):
+        self.monkeypatch = MonkeyPatch()
+        self.args = get_inputs()
+
+    def tearDown(self) -> None:
+        self.monkeypatch.undo()
+        return super().tearDown()
+
+    @property
+    def applyPatch(self):
+        f = lambda x: argparse.Namespace(**self.args)
+        self.monkeypatch.setattr(argparse.ArgumentParser, 'parse_args', f)
+
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, capfd):
+        self._capfd = capfd
+
+    def test_weblinks_version(self):
+        self.args['version'] = True
+        self.applyPatch
+        run.main()
+        out, err = self._capfd.readouterr()
+        assert out.strip() == 'weblinks version: 1.2'
+        del self.args['version']
+
 
 @pytest.mark.run
 class TestWeblinksWithMissingArgs(unittest.TestCase):
@@ -38,7 +69,6 @@ class TestWeblinksWithMissingArgs(unittest.TestCase):
     def tearDown(self) -> None:
         self.monkeypatch.undo()
         return super().tearDown()
-
 
     @property
     def applyPatch(self):
@@ -54,7 +84,7 @@ class TestWeblinksWithMissingArgs(unittest.TestCase):
         with self._caplog.at_level(logging.INFO):
             run.main()
             messages = {each.message for each in self._caplog.records}
-            assert "--web is mandatory" in messages
+            assert "-w/--web is mandatory" in messages
 
     def test_substring_is_mandatory(self):
         self.args['web'] = 'https://www.python.org/ftp/python/3.8.13/'
@@ -62,7 +92,7 @@ class TestWeblinksWithMissingArgs(unittest.TestCase):
         with self._caplog.at_level(logging.INFO):
             run.main()
             messages = {each.message for each in self._caplog.records}
-            assert "substring is mandatory" in messages
+            assert "-s/--substring is mandatory" in messages
 
     def test_invalid_webpage(self):
         self.args['web'] = 'abcd'

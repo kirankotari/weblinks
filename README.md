@@ -18,8 +18,23 @@
 
 ## Introduction
 
-Wanted to fetch the links from web and filter them using substring, a file extentions
+Weblinks, It get all links from a given website and we can apply filters on top of it to get desired results, when you are good you can start downloading them with `-d` flag.
 
+TODO: many changes, add-ons need to update in full.!
+
+In the library we are supporting plain webpages, authentication based webpages.
+
+## Pre-req
+
+A system need to have curl and python
+
+## Docs
+
+How to use weblinks?
+
+```python
+
+```
 ## Installation and Downloads
 
 `pip install weblinks`
