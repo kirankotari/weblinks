@@ -2,7 +2,8 @@ from setuptools import setup, find_packages
 from os import path
 from io import open
 
-version = "1.2"
+version = "1.1.5"
+# version = "2.0" # TODO: planning to release a major version
 
 # setup file path
 here = path.abspath(path.dirname(__file__))
@@ -49,7 +50,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Operating System :: OS Independent',
         ],
-    keywords = 'weblinks getlinks web-links get-links fetch-links',
+    keywords = 'weblinks getlinks web-links get-links fetch-links filter-links filterlinks',
     packages = find_packages(where='.', exclude=['tests']),
     include_package_data=True,
 )
