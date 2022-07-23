@@ -55,7 +55,7 @@ class TestWeblinksVersion(unittest.TestCase):
         self.applyPatch
         run.main()
         out, err = self._capfd.readouterr()
-        assert out.strip() == 'weblinks version: 1.2'
+        assert out.strip() == 'weblinks version: 2.0'
         del self.args['version']
 
 
