@@ -2,8 +2,7 @@ from setuptools import setup, find_packages
 from os import path
 from io import open
 
-version = "1.1.5"
-# version = "2.0" # TODO: planning to release a major version
+version = "2.0"
 
 # setup file path
 here = path.abspath(path.dirname(__file__))

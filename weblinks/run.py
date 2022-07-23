@@ -2,7 +2,9 @@
     and filter them using substring, a file extentions
 
 usage: weblinks [-h] [-w WEB] [-s SUBSTRING] [-e EXT] [-d] [-u USERNAME]
-               [-p PASSWORD] [-g] [-l] [-v] [--version]
+                [-p PASSWORD] [-g] [-l] [-v] [--proxy PROXY]
+                [--proxy-username PROXY_USERNAME]
+                [--proxy-password PROXY_PASSWORD] [--version]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -18,6 +20,11 @@ optional arguments:
   -g, --global          global configuration
   -l, --local           local configuration
   -v, --verbosity
+  --proxy PROXY         proxy address
+  --proxy-username PROXY_USERNAME
+                        proxy username
+  --proxy-password PROXY_PASSWORD
+                        proxy password
   --version             weblinks version
 """
 
@@ -32,7 +39,7 @@ from .utils import get_log
 from .config import Configuration
 
 
-version = "1.2"
+version = "2.0"
 
 
 def parser() -> argparse:
