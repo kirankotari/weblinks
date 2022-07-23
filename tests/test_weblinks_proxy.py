@@ -35,7 +35,6 @@ def get_inputs():
     return args
 
 
-# TODO: need to add proxy test cases
 @pytest.mark.run
 class TestWeblinksVersion(unittest.TestCase):
 

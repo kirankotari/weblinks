@@ -32,7 +32,7 @@ from .utils import get_log
 from .config import Configuration
 
 
-version = "1.2"
+version = "2.0"
 
 
 def parser() -> argparse:
