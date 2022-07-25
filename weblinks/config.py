@@ -1,8 +1,9 @@
 from __future__ import absolute_import
 
-import json
 from pathlib import Path
 from logging import INFO
+from json import load, dump
+
 from .utils import Utils
 
 
@@ -15,7 +16,7 @@ class Configuration(Utils):
 
     def read_json(self, path):
         with open(path, 'r') as f:
-            data = json.load(f)
+            data = load(f)
         return data
 
     def update_not_none(self, data, args):
@@ -41,7 +42,7 @@ class Configuration(Utils):
         self.log.debug(f'path: {self.global_path}')
         with open(self.global_path, 'w') as f:
             del args.__dict__['global']
-            json.dump(args.__dict__, f)
+            dump(args.__dict__, f)
         return
 
     def update_local(self, args):
@@ -49,6 +50,6 @@ class Configuration(Utils):
         self.log.debug(f'path: {self.local_path}')
         with open(self.local_path, 'w') as f:
             del args.__dict__['local']
-            json.dump(args.__dict__, f)
+            dump(args.__dict__, f)
         return
 

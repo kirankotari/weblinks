@@ -29,9 +29,10 @@ optional arguments:
 """
 
 import getpass
-import logging
 import argparse
-import validators
+
+from validators import url
+from logging import INFO, DEBUG
 
 from .proxy import Proxy
 from .weblinks import Web
@@ -62,7 +63,7 @@ def parser() -> argparse:
 
 def validate_parser(log, args) -> bool:
     if args.web:
-        if not validators.url(args.web):
+        if not url(args.web):
             log.error(f"url `{args.web}` is invalid")
             return False
         if len(args.web.split('/')[-1].split('.')) == 1:
@@ -85,7 +86,7 @@ def validate_parser(log, args) -> bool:
 
 
 def main():
-    level=logging.INFO
+    level=INFO
 
     args = parser()
 
@@ -94,7 +95,7 @@ def main():
         return
 
     if args.__dict__.get('verbosity', 0) >= 1:
-        level=logging.DEBUG
+        level=DEBUG
 
     log = get_log(level)
     config = Configuration(level)
