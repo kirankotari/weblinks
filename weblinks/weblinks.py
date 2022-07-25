@@ -1,8 +1,7 @@
 from __future__ import absolute_import
 
-import re
-import os
-
+from os import unlink
+from re import findall
 from logging import INFO
 from typing import Union
 from .utils import System, Utils
@@ -25,9 +24,9 @@ class Web(Utils, System):
             return []
         self.log.debug(f"applying filters")
         if self.ext:
-            files = re.findall(fr'href="(.*{self.filter}.*.{self.ext})"', html)
+            files = findall(fr'href="(.*{self.filter}.*.{self.ext})"', html)
         else:
-            files = re.findall(fr'href="(.*?{self.filter}.*)"', html)
+            files = findall(fr'href="(.*?{self.filter}.*)"', html)
         self.log.debug(f'found: {len(files)} files')
         return files
 
@@ -43,5 +42,5 @@ class Web(Utils, System):
             self.log.debug(f"read webpage: {name}.html")
             if delete_copy:
                 self.log.debug(f"delete webpage: {name}.html")
-                os.unlink(f"{name}.html")
+                unlink(f"{name}.html")
             return html

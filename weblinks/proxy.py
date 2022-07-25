@@ -1,8 +1,7 @@
 from __future__ import absolute_import
 
-import json
-from pathlib import Path
 from logging import INFO
+
 from .utils import Utils
 
 
