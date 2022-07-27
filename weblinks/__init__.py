@@ -1,6 +1,5 @@
-from weblinks.weblinks import Web
-from weblinks.utils import get_log
-from weblinks.utils import System
-from weblinks.utils import Utils
-from weblinks.config import Configuration
+from weblinks.log import Logger
 from weblinks.proxy import Proxy
+from weblinks.weblinks import Web
+from weblinks.utils import Utils, System
+from weblinks.config import Configuration

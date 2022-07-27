@@ -1,13 +1,11 @@
 from __future__ import absolute_import
 
-from logging import INFO
-
 from .utils import Utils
 
 
 class Proxy(Utils):
-    def __init__(self, level=INFO) -> None:
-        super().__init__(level)
+    def __init__(self) -> None:
+        super().__init__()
 
     # curl -x http://<user>:<pass>@<proxyhost>:<port>/
     #  -o <filename> -L <link>

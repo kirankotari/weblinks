@@ -36,7 +36,7 @@ from logging import INFO, DEBUG
 
 from .proxy import Proxy
 from .weblinks import Web
-from .utils import get_log
+from .log import Logger
 from .config import Configuration
 
 
@@ -97,9 +97,9 @@ def main():
     if args.__dict__.get('verbosity', 0) >= 1:
         level=DEBUG
 
-    log = get_log(level)
-    config = Configuration(level)
-    proxy = Proxy(level)
+    log = Logger(level).log
+    config = Configuration()
+    proxy = Proxy()
     args = config.load(args)
 
     if args.__dict__.get('global', False):
@@ -115,7 +115,7 @@ def main():
     log.debug('initiate args validataion')
     if validate_parser(log, args):
         args.proxy = proxy.add(args)
-        web = Web(args.web, args.substring, args.ext, level, args.proxy)
+        web = Web(args.web, args.substring, args.ext, args.proxy)
         log.debug(f'args: {web.hide_password(args.__dict__)}')
         web.setup(args.username, args.password)
         links = web.get_links()

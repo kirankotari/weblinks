@@ -2,14 +2,13 @@ from __future__ import absolute_import
 
 from os import unlink
 from re import findall
-from logging import INFO
 from typing import Union
 from .utils import System, Utils
 
 
 class Web(Utils, System):
-    def __init__(self, web, substring, ext=None, level=INFO, proxy=None) -> None:
-        super(Web, self).__init__(level)
+    def __init__(self, web, substring, ext=None, proxy=None) -> None:
+        super().__init__()
         self.log.debug(f"class: {__class__.__name__} initialize")
         self.ext = ext
         self.web = web

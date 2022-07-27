@@ -1,15 +1,14 @@
 from __future__ import absolute_import
 
 from pathlib import Path
-from logging import INFO
 from json import load, dump
 
 from .utils import Utils
 
 
 class Configuration(Utils):
-    def __init__(self, level=INFO) -> None:
-        super().__init__(level)
+    def __init__(self) -> None:
+        super().__init__()
         self.path = '.weblinks'
         self.local_path = Path(f'./{self.path}').expanduser().absolute()
         self.global_path = Path(f'~/{self.path}').expanduser().absolute()

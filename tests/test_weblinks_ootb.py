@@ -114,8 +114,7 @@ class TestWeblinksWithOOTBMethods(unittest.TestCase):
             web = weblinks.Web(
                 self.args['web'], 
                 self.args['substring'],
-                self.args['ext'],
-                logging.DEBUG
+                self.args['ext']
             )
             web.setup(username='dummy', password='dummy')
             links = web.get_links()
@@ -133,8 +132,7 @@ class TestWeblinksWithOOTBMethods(unittest.TestCase):
             web = weblinks.Web(
                 self.args['web'], 
                 self.args['substring'],
-                self.args['ext'],
-                logging.DEBUG
+                self.args['ext']
             )
             web.setup(username=None, password=None)
             links = web.get_links()
