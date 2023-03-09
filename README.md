@@ -1,5 +1,11 @@
 # Weblinks
 
+Weblinks, It get all links from a given website and we can apply filters on top of it to get desired results, when you are good you can start downloading them with `-d` flag.
+
+In the library we are supporting plain webpages, authentication based webpages, proxy, authentication on proxy, etc. 
+
+We also support storing the config in either local/global configuration, for best practise we suggest not to store your password, you get a prompt on runtime wher you can provide it.
+
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache2-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
 [![pytest](https://github.com/kirankotari/weblinks/actions/workflows/pytest.yml/badge.svg)](https://github.com/kirankotari/weblinks/actions/workflows/pytest.yml)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/kirankotari/weblinks)
@@ -9,36 +15,6 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/kirankotari/weblinks)
 ![GitHub issues](https://img.shields.io/github/issues/kirankotari/weblinks)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/kirankotari/weblinks)
-
-- [Introduction](#introduction)
-- [Pre-requisites](#pre-requisites)
-- [Installation and Downloads](#installation-and-downloads)
-- [Commands](#commands)
-- [Docs](#docs)
-- [Bug Tracker and Support](#bug-tracker-and-support)
-- [License and Copyright](#license-and-copyright)
-- [Author and Thanks](#author-and-thanks)
-
-
-## Introduction
-
-Weblinks, It get all links from a given website and we can apply filters on top of it to get desired results, when you are good you can start downloading them with `-d` flag.
-
-In the library we are supporting plain webpages, authentication based webpages, proxy, authentication on proxy, etc. 
-
-We also support storing the config in either local/global configuration, for best practise we suggest not to store your password, you get a prompt on runtime wher you can provide it.
-
-## Pre-requisites
-
-A system need to support **curl commands** and **python3**
-
-## Installation and Downloads
-
-```shell
-pip install weblinks
-```
-
-## Commands
 
 ```shell
 weblinks --help
@@ -69,6 +45,24 @@ optional arguments:
   --proxy-password PROXY_PASSWORD
                         proxy password
   --version             weblinks version
+```
+
+- [Pre-requisites](#pre-requisites)
+- [Installation and Downloads](#installation-and-downloads)
+- [Docs](#docs)
+- [Bug Tracker and Support](#bug-tracker-and-support)
+- [License and Copyright](#license-and-copyright)
+- [Author and Thanks](#author-and-thanks)
+
+
+## Pre-requisites
+
+A system need to support **curl commands** and **python3**
+
+## Installation and Downloads
+
+```shell
+pip install weblinks
 ```
 
 ## Docs
